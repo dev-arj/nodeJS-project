@@ -1,0 +1,25 @@
+{
+  "name": "first-api",
+  "version": "1.0.0",
+  "description": "This is the first API in this computer",
+  "main": "index.js",
+  "scripts": {
+    "build": "ts-node index.ts && tsc"
+  },
+  "keywords": [
+    "Books"
+  ],
+  "author": "dev-arj",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "lodash": "^4.17.21",
+    "mongodb": "^3.6.6",
+    "ts-node": "^9.1.1",
+    "tsc": "^1.20150623.0",
+    "typescript": "^4.2.4"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  }
+}
