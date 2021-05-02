@@ -2,76 +2,52 @@ const books = require('./books.json');
 const _ = require('lodash');
 const bodyParser = require('body-parser');
 var MongoClient = require('mongodb').MongoClient;
+var url = "mongodb://localhost:27017/";
 
-// Connect to the db
-MongoClient.connect("mongodb://localhost:27017/MyDb", function (err, db) {
-    
-    db.collection('library', function (err, collection) {
-        
-        collection.insert({ id: 1, firstName: 'Steve', lastName: 'Jobs' });
-        collection.insert({ id: 2, firstName: 'Bill', lastName: 'Gates' });
-        collection.insert({ id: 3, firstName: 'James', lastName: 'Bond' });
-        
-        
+var dbo;
 
-        db.collection('library').count(function (err, count) {
-            if (err) throw err;
-            
-            console.log('Total Rows: ' + count);
-        });
-    });
-                
+MongoClient.connect(url, function (err, db) {
+    if (err) throw err;
+    dbo = db.db('library');
 });
 
 const express = require('express');
-const { forEachChild, couldStartTrivia } = require('typescript');
 const app = express();
 
 app.use(bodyParser.json());
 app.get('/books', function (req, res, next) {
     console.log("/books endpoint has been hit!");
-    console.log(books.books.length);
-    res.status(200);
-    res.send(books);
-    next();
-});
-
-app.get('/books/:id', function (req, res, next) {
-    console.log(`id number ${req.params.id} was searched for!`)
-    _.forEach(books.books, function (book) {
-        if (book.id = req.params.id) {
-            res.send(book);
-        }
+    dbo.collection('books').find({}).toArray(function (err, result) {
+        if (err) throw err;
+        console.log(result);
+        res.send(result);
     });
-    next();
 });
 
-app.post('/books/add', function (req, res, next) {
+
+app.put('/books/add', function (req, res, next) {
     const book = req.body.book ? req.body.book : "";
     const author = req.body.author ? req.body.author : "";
-    books.books.push({ "id": books.books.length + 1, "book": book, "author": author });
-    console.log(`id number ${books.books.length} was added!`)
-    res.status(200);
-    res.send(books);
-    next();
+    var myobj = {book : book, author: author};
+
+    dbo.collection("books").insertOne(myobj, function (err, result) {
+        if (err) throw err;
+        console.log("1 document inserted");
+        console.log(result);
+        res.send(result);
+    });
 });
 
+
 app.post('/books/remove', function (req, res, next) {
-    const { id } = req.body;
-    console.log(id)
-    if (id <= books.books.length) {
-    _.forEach(books.books, function (book) {
-        console.log(book)
-        if (book.id == id) {
-            res.send(books.books[id])
-            delete books.books[id];
-            console.log(`${id} removed from books`)
-            res.status(200);
-        } else {
-            res.status(404);
-        }
+    const book = req.body.book;
+    var myquery = { book: book };
+    dbo.collection("books").deleteOne(myquery, function (err, obj) {
+        if (err) throw err;
+        console.log("1 document deleted");
+        console.log(obj);
+        res.send(obj);
     });
-    }
 });
 
 app.listen(3000,
